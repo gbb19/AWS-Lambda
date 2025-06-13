@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
   AWS-Lambda
@@ -24,7 +24,7 @@ Resources:
       Handler: bootstrap
       Runtime: provided.al2023
       Architectures:
-      - x86_64
+        - x86_64
       Events:
         CatchAll:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -34,6 +34,25 @@ Resources:
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           PARAM1: VALUE
+  FBWebhookFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      CodeUri: fb-handler/
+      Handler: bootstrap
+      Runtime: provided.al2023
+      Architectures:
+        - x86_64
+      Events:
+        FbWebhookApi:
+          Type: Api
+          Properties:
+            Path: /fb
+            Method: POST
+      Environment:
+        Variables:
+          LOG_LEVEL: info
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
@@ -48,3 +67,10 @@ Outputs:
   HelloWorldFunctionIamRole:
     Description: Implicit IAM Role created for Hello World function
     Value: !GetAtt HelloWorldFunctionRole.Arn
+
+  FBWebhookAPI:
+    Description: API Gateway endpoint URL for FBWebhookFunction
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/fb/"
+  FBWebhookFunctionArn:
+    Description: Lambda Function ARN for FBWebhookFunction
+    Value: !GetAtt FBWebhookFunction.Arn

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -8,18 +9,22 @@ import (
 )
 
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	var greeting string
 	sourceIP := request.RequestContext.Identity.SourceIP
-
 	if sourceIP == "" {
-		greeting = "Hello, world!\n"
-	} else {
-		greeting = fmt.Sprintf("Hello, %s!\n", sourceIP)
+		sourceIP = "world"
 	}
 
+	// สร้าง JSON response
+	responseBody, _ := json.Marshal(map[string]string{
+		"message": fmt.Sprintf("Hello, %s!", sourceIP),
+	})
+
 	return events.APIGatewayProxyResponse{
-		Body:       greeting,
+		Body:       string(responseBody),
 		StatusCode: 200,
+		Headers: map[string]string{
+			"Content-Type": "application/json",
+		},
 	}, nil
 }
 
